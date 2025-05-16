@@ -11,8 +11,7 @@ bool mean_geor(std::vector<double> arr) {
         std::cout << "ваша комбинация чисел не имеет среднего геометрического среди действительных чисел";
         return 0;
     }
-    std::cout << arr.size() << "\n";
-    std::cout << pow(product, double(1 / arr.size()));
+    std::cout << pow(product, double(1.0 / arr.size()));
     return 1;
 }
 
@@ -29,14 +28,14 @@ int main(){
     for (int i = 0; i < counter; i++) {
         std::cin >> elem;
         if (elem == 0) {
-            std::cout << "Вы ввели '0' вы осазнаёте это? \n Д/Н";
+            std::cout << "Вы ввели '0' вы осазнаёте это? \n Д/Н \n"; // 1238326
             std::cin >> answer; // пользователь думает, что от его ответа что-то зависит :)
             flag = true;
         }
         arr.push_back(elem);
     }
 
-    if (flag) { std::cout << "0 \n а вы чего ожидали?"; }
+    if (flag) { std::cout << "0 \nа вы чего ожидали?\n"; }
     else {
         mean_geor(arr);
     }
