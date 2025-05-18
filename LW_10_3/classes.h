@@ -1,8 +1,8 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include <fstream>
 #include <type_traits>
+#include <fstream>
 
 class Data {
 private:
@@ -45,42 +45,66 @@ std::ostream& operator <<(std::ostream& stream, const Data& moment) {
 	return stream;
 }
 
-template <typename Tname, typename Tlifetime, typename TDOB>
 class Plant {
 private:
 	std::string name;
-	int lifetime; // lifetime_in_days
+	int lifetime;
 	Data day_of_born;
 public:
-	Plant(Tname name_ = "Bob", Tlifetime lifetime_ = 365, TDOB day_of_born_ = { 0, 0 }) {
-		static_assert(
-			std::is_same_v<Tname, std::string> &&
-			std::is_same_v<Tlifetime, int> &&
-			std::is_same_v<TDOB, Data>,
-			"Неккоректные типы данных \n");
+	Plant(std::string name_ = "Bob", int lifetime_ = 365, Data day_of_born_ = { 0, 0 }) {
 		this->name = name_;
 		this->lifetime = lifetime_;
 		this->day_of_born = day_of_born_;
 	}
-	void set_name(Tname new_name) {
-		static_assert(std::is_same_v<Tname, std::string>, "Требуется std::string!");
-		name = new_name;
+	template <typename T>
+	void set_name(T new_name) {
+		try
+		{
+			if (typeid(new_name).name() != "std::string") {
+				throw std::exception("Не соответствует тип данных для смены имени \n");
+			}
+			name = new_name;
+		}
+		catch (const std::exception& ex)
+		{
+			std::cout << ex.what();
+		}
 	}
-	void set_lifetime(Tlifetime new_lifetime) {
-		static_assert(std::is_same_v<Tlifetime, int>, "Требуется int");
-		lifetime = new_lifetime;
+	template <typename T>
+	void set_lifetime(T new_lifetime) {
+		try
+		{
+			if (typeid(new_lifetime).name() != "int") {
+				throw std::exception("Не соответствует тип данных для смены времени жизни \n"); // сранно звучит
+			}
+			lifetime = new_lifetime;
+		}
+		catch (const std::exception& ex)
+		{
+			std::cout << ex.what();
+		}
 	}
-	void set_day_of_born(TDOB new_day_of_born) {
-		static_assert(std::is_same_v<TDOB, Data>, "Требуется Data");
-		day_of_born = new_day_of_born;
+	template <typename T>
+	void set_day_of_born(T new_day_of_born) {
+		try
+		{
+			if (typeid(new_day_of_born).name() != "Data") {
+				throw std::exception("Не соответствует тип данных для смены даты рождения");
+			}
+			day_of_born = new_day_of_born;
+		}
+		catch (const std::exception&)
+		{
+
+		}
 	}
 
 	std::string get_name() const { return name; }
 	int get_lifetime() const { return lifetime; }
 	Data get_day_of_born() const { return day_of_born; }
 
-	void print(std::ostream& os = std::cout) const { // нейронка подсказала
-		std::cout << "name - " << name << '\n' << "lifetime - " << lifetime << "\n" << "day when he/she was plant" << day_of_born << "\n";
+	void print(std::ostream& os = std::cout) const {
+		os << "name - " << name << '\n' << "lifetime - " << lifetime << "\n" << "day when he/she was plant" << day_of_born << "\n";
 	}
 	void how_old_plant() {
 		int years = lifetime / 365;
@@ -98,36 +122,40 @@ public:
 		}
 		std::cout << "congrats" << "\n";
 	}
-	void infromation_to_file(std::string path) {
+	void infromation_to_file(std::string paths) {
 		std::ofstream out;
-		out.open(path);
-		if (out.is_open()) {
+		
+		try
+		{
+			out.open(paths);
+			if (out.is_open() == true)
+			{
+				throw std::exception("Такого файла не существует");
+			}
 			print(out);
 		}
-		else {
-			throw std::runtime_error("Не удалось открыть файл: " + path);
+		catch (const std::exception& ex)
+		{
+			std::cout << ex.what();
 		}
-
 	}
 
 };
-template <typename Tname, typename TLifetime, typename TDOB, typename TBloomStart = Data, typename TBloomDuration = int>
-class Flower : public Plant<std::string, int, Data> {
+
+class Flower : public Plant{
 private:
-	TBloomStart bloom_starting;
-	TBloomDuration bloom_duration;
+	Data bloom_starting;
+	int bloom_duration;
 public:
-	Flower(Tname name_ = "Bob", TLifetime lifetime_ = 365, TDOB day_of_born_ = { 0, 0 }, TBloomStart bloom_starting_ = { 0, 0 }, TBloomDuration bloom_duration_ = 1) :
-		Plant<std::string, int, Data>(name_, lifetime_, day_of_born_), bloom_starting(bloom_starting_), bloom_duration(bloom_duration_) {
+	Flower(std::string name_ = "Bob", int lifetime_ = 365, Data day_of_born_ = { 0, 0 }, Data bloom_starting_ = { 0, 0 }, int bloom_duration_ = 1) :
+		Plant(name_, lifetime_, day_of_born_), bloom_starting(bloom_starting_), bloom_duration(bloom_duration_) {
 		this->bloom_starting = bloom_starting_;
 		this->bloom_duration = bloom_duration_;
 	};
-	void set_bloom_starting(TBloomStart new_bloom_data) {
-		static_assert(std::is_same_v<TBloomStart, Data>, "Требуется Data");
-		bloom_starting = new_bloom_data;
+	void set_bloom_starting(Data new_bloom_starting) {
+		bloom_starting = new_bloom_starting;
 	}
-	void set_bloom_duration(TBloomDuration new_b_d) {
-		static_assert(std::is_same_v<TBloomDuration, int>, "Требуется int");
+	void set_bloom_duration(int new_b_d) {
 		bloom_duration = new_b_d;
 	}
 	Data get_bloom_starting() {
@@ -137,18 +165,24 @@ public:
 		return bloom_duration;
 	}
 	void print(std::ostream& os = std::cout) {
-		Plant<std::string, int, Data>::print();
+		Plant::print();
 		std::cout << "blosom starting in " << bloom_starting << "\n"
 			<< "blossom will continue for " << bloom_duration << " days" << "\n";
 	}
-	void information_to_file(std::string path) {
+	void information_to_file(std::string paths) {
 		std::ofstream out;
-		out.open(path);
-		if (out.is_open()) {
+		try
+		{
+			out.open(paths, std::ofstream::out | std::ofstream::app);
+			if (out.is_open() == true)
+			{
+				throw std::exception("Такого файла не существует");
+			}
 			print(out);
 		}
-		else {
-			throw std::runtime_error("Не удалось открыть файл: " + path);
+		catch (const std::exception& ex)
+		{
+			std::cout << ex.what();
 		}
 	}
 };
